@@ -27,7 +27,7 @@ const initialForm = {
 };
 
 // Post-payment setup page: reached via a one-time link
-// (yoursite.com/setup?token=xxxx) sent after Paddle confirms payment.
+// (yoursite.com/setup?token=xxxx) sent after Dodo Payments confirms payment.
 // The token itself is the credential — no login required, same pattern as
 // a password-reset link. It is validated server-side by submit_campaign_setup
 // and invalidated the moment it's used successfully.

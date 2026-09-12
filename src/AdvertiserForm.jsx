@@ -6,11 +6,16 @@ import { DURATION_TIERS, priceForDuration, formatCents } from "./pricing";
 // 1. Pick a fixed duration (24h / 3 days / 7 days) — that's all that's
 //    needed up front. Price is flat and re-verified server-side.
 // 2. We create a lightweight "skeleton" campaign row (create_checkout_campaign)
-//    and open Paddle checkout for it.
-// 3. The instant Paddle's checkout completes, we call get-setup-link with
-//    the transaction id (unguessable, only known to this browser) to fetch
+//    and redirect the browser to Dodo Payments' hosted checkout page for it
+//    (create-checkout returns checkout_url).
+// 3. Dodo's return_url points back at our own homepage as
+//    "/?checkout=complete&payment_id=...". On mount we check for that query
+//    string, then call get-setup-link with payment_id (the id Dodo appends,
+//    matched against the dodo_payment_id column dodo-webhook writes) to get
 //    the one-time setup token, then redirect straight to /setup?token=...
-//    No email, no login — same tab, same second.
+//    No email, no login required. get-setup-link already retries internally
+//    for ~8s while it waits on dodo-webhook to land, so we only need one
+//    extra fallback retry here for slower cases.
 export default function AdvertiserForm({ onDone }) {
   const [durationHours, setDurationHours] = useState(72);
   const [submitting, setSubmitting] = useState(false);
@@ -20,33 +25,36 @@ export default function AdvertiserForm({ onDone }) {
   const [finalizing, setFinalizing] = useState(false);
   const [finalizeError, setFinalizeError] = useState(null);
   const [pendingCampaignId, setPendingCampaignId] = useState(null);
-  const [pendingTransactionId, setPendingTransactionId] = useState(null);
 
   const priceCents = priceForDuration(durationHours) ?? 0;
 
-  // Paddle's checkout.completed event is wired globally in main.jsx
-  // (eventCallback belongs on Paddle.Initialize(), not Checkout.open()) and
-  // rebroadcast as a plain browser event, with the transaction id attached
-  // when Paddle provides one. We fall back to the transaction id we already
-  // have in state, since we know exactly which checkout we just opened.
+  // On mount, check whether we've just been sent back here by Dodo
+  // (return_url = "/?checkout=complete&payment_id=..."). If so, skip the
+  // whole form and resolve straight to the setup page.
   useEffect(() => {
-    function handleCheckoutCompleted(e) {
-      const transactionId = e?.detail?.transactionId || pendingTransactionId;
-      if (transactionId) {
-        redirectToSetup(transactionId);
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("checkout") === "complete") {
+      const paymentId = params.get("payment_id");
+      // Clean the URL so a refresh doesn't re-trigger this.
+      window.history.replaceState({}, "", window.location.pathname);
+      if (paymentId) {
+        redirectToSetup(paymentId);
+      } else {
+        setFinalizeError(
+          "Payment received, but we couldn't read the payment reference. Please contact support."
+        );
       }
     }
-    window.addEventListener("pandora:checkout-completed", handleCheckoutCompleted);
-    return () => window.removeEventListener("pandora:checkout-completed", handleCheckoutCompleted);
-  }, [pendingTransactionId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  async function redirectToSetup(transactionId) {
+  async function redirectToSetup(paymentId, attempt = 0) {
     setFinalizing(true);
     setFinalizeError(null);
 
     try {
       const { data, error } = await supabase.functions.invoke("get-setup-link", {
-        body: { transaction_id: transactionId },
+        body: { payment_id: paymentId },
       });
 
       if (error || !data) {
@@ -58,12 +66,19 @@ export default function AdvertiserForm({ onDone }) {
         return;
       }
 
-      // Payment recorded but the webhook hasn't landed yet (rare, ~1-2s).
-      // Give it one more shot before asking the advertiser to refresh.
-      setFinalizeError(
-        "Payment received — finishing setup, this can take a few seconds. Please wait…"
-      );
-      setTimeout(() => redirectToSetup(transactionId), 3000);
+      // get-setup-link already polls for ~8s server-side. This is a slower
+      // fallback on top of that, for rare cases where the webhook lags
+      // even further.
+      if (attempt < 3) {
+        setFinalizeError(
+          "Payment received — finishing setup, this can take a few seconds. Please wait…"
+        );
+        setTimeout(() => redirectToSetup(paymentId, attempt + 1), 4000);
+      } else {
+        setFinalizeError(
+          "Payment received, but setup is taking longer than expected. Please refresh in a moment — your campaign is safe."
+        );
+      }
     } catch (err) {
       setFinalizeError(
         err.message || "Payment received, but we couldn't open your setup page automatically. Please refresh — your campaign is safe."
@@ -121,18 +136,16 @@ export default function AdvertiserForm({ onDone }) {
         { body: { campaign_id: campaignId } }
       );
 
-      if (fnError || !fnData?.transaction_id) {
+      if (fnError || !fnData?.checkout_url) {
         setCheckoutError("Could not start checkout. Please try again.");
         return;
       }
 
-      setPendingTransactionId(fnData.transaction_id);
-
-      if (window.Paddle) {
-        window.Paddle.Checkout.open({ transactionId: fnData.transaction_id });
-      } else {
-        setCheckoutError("Payment system didn't load. Refresh the page and try again.");
-      }
+      // Dodo Payments has no embeddable overlay — checkout is a redirect to
+      // their hosted page. Dodo sends the browser back to
+      // "/?checkout=complete&payment_id=..." (return_url), which this same
+      // component picks up on mount and resolves via get-setup-link.
+      window.location.href = fnData.checkout_url;
     } catch {
       setCheckoutError("Could not start checkout. Please try again.");
     } finally {

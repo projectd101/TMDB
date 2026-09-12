@@ -147,7 +147,7 @@ const navItems = [
   ["pricing", "Pricing"],
 ];
 
-// Paths Paddle (and anyone else) can hit directly, e.g.
+// Paths Dodo Payments (and anyone else) can hit directly, e.g.
 // themilliondollarbillboard.vercel.app/terms — these must resolve to real
 // content without any button clicks, since verification bots and shared
 // links land here cold.
@@ -179,7 +179,13 @@ function useSetupToken() {
 }
 
 export default function App() {
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(() => {
+    // Dodo's return_url lands on "/?checkout=complete&payment_id=...".
+    // AdvertiserForm is what resolves that param into a setup redirect, so
+    // it must be mounted immediately rather than showing the plain
+    // homepage first.
+    return new URLSearchParams(window.location.search).get("checkout") === "complete";
+  });
   const [page, setPage] = useState(() => pageFromPath(window.location.pathname));
   const [activeCampaign, setActiveCampaign] = useState(null);
 

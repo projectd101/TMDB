@@ -839,10 +839,10 @@ export function PrivacyPage({ onBack }) {
 
       <Section title="Payments">
         <p style={styles.p}>
-          Payments are processed by Paddle, our payment provider and Merchant
-          of Record. We do not collect or store your card details — Paddle
-          handles payment collection and is responsible for that data under
-          its own privacy policy and terms.
+          Payments are processed by Dodo Payments, our payment provider and
+          Merchant of Record. We do not collect or store your card details —
+          Dodo Payments handles payment collection and is responsible for
+          that data under its own privacy policy and terms.
         </p>
 
         <p style={styles.p}>
@@ -866,9 +866,9 @@ export function PrivacyPage({ onBack }) {
       <Section title="Third-party services">
         <p style={styles.p}>
           We use Supabase for our database and backend infrastructure, and
-          Paddle for payment processing. These providers may process data on
-          our behalf as necessary to run the service, under their own
-          respective privacy and security practices.
+          Dodo Payments for payment processing. These providers may process
+          data on our behalf as necessary to run the service, under their
+          own respective privacy and security practices.
         </p>
       </Section>
 
@@ -932,10 +932,10 @@ export function RefundPage({ onBack }) {
 
       <Section title="How refunds are handled">
         <p style={styles.p}>
-          Payments are processed by Paddle, our Merchant of Record. Where a
-          refund is approved, it is issued through Paddle back to your
-          original payment method, and may take several business days to
-          appear depending on your bank or card provider.
+          Payments are processed by Dodo Payments, our Merchant of Record.
+          Where a refund is approved, it is issued through Dodo Payments
+          back to your original payment method, and may take several
+          business days to appear depending on your bank or card provider.
         </p>
       </Section>
 
