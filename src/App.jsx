@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "./force-black.css";
 import DigitalBillboard from "./DigitalBillboard.jsx";
+import OutbidWall from "./OutbidWall.jsx";
+import PriceBanner from "./PriceBanner.jsx";
 import AdvertiserForm from "./AdvertiserForm.jsx";
 import CampaignSetup from "./CampaignSetup.jsx";
 import {
@@ -343,6 +345,8 @@ export default function App() {
       ) : (
         <main style={styles.billboardMain}>
           <DigitalBillboard onCampaignChange={setActiveCampaign} />
+          <PriceBanner onAdvertiseClick={() => setShowForm(true)} />
+          <OutbidWall />
 
           <section style={styles.discoveryCopy}>
             <div style={styles.discoveryEyebrow}>

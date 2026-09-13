@@ -1,5 +1,5 @@
 import React from "react";
-import { DURATION_TIERS, formatCents } from "./pricing";
+import { formatCents } from "./pricing";
 
 const siteName = "The Million Dollar Billboard";
 
@@ -734,7 +734,8 @@ export function TermsPage({ onBack }) {
           We aim to keep the billboard and related services available, but we
           do not guarantee uninterrupted operation, campaign visibility,
           traffic levels or any particular commercial result. Your campaign
-          runs for the fixed duration you purchased regardless of traffic.
+          stays on the billboard for as long as you are not outbid — there
+          is no fixed duration.
         </p>
       </Section>
 
@@ -752,31 +753,36 @@ export function TermsPage({ onBack }) {
 export function PricingsPage({ onBack }) {
   return (
     <PageShell onBack={onBack}>
-      <Section title="How campaign pricing works" lead="Pick a duration, pay a flat rate, that's it.">
+      <Section title="How it works" lead="One spot. Highest bidder holds it. No time limit.">
         <p style={styles.p}>
-          Campaigns are billed as a flat, fixed fee for a set amount of time
-          on the billboard — not per click or per interaction. You know the
-          full price before you pay, and it doesn't change based on how much
-          traffic your campaign gets.
+          There is only one advertising spot on the billboard. Whoever has
+          paid the most currently holds it, for as long as nobody outbids
+          them — there is no fixed campaign duration and no expiry date.
         </p>
       </Section>
 
       <Section
-        title="Duration & pricing"
-        lead="Three fixed options — no custom quotes, no hidden fees."
+        title="Bidding & pricing"
+        lead="To take over the billboard, you must bid at least $5 more than the current price."
       >
-        <div style={styles.cardGrid}>
-          {DURATION_TIERS.map((tier) => (
-            <div className="legal-card" style={styles.card} key={tier.hours}>
-              <div style={styles.cardKicker}>{tier.label}</div>
-              <h3 style={styles.cardTitle}>{formatCents(tier.priceCents)}</h3>
-              <p style={styles.cardText}>
-                Your campaign is live on the billboard for {tier.label},
-                for one flat price.
-              </p>
-            </div>
-          ))}
+        <div className="legal-card" style={styles.callout}>
+          <h3 style={styles.calloutTitle}>The current price to beat is shown live on the billboard page.</h3>
+          <p style={styles.calloutText}>
+            If no one currently holds the spot, the starting price is $5.
+            Payment is final — if you are later outbid, your ad comes down
+            immediately and there is no refund.
+          </p>
         </div>
+      </Section>
+
+      <Section title="If you get outbid" lead="You don't disappear — you move to the permanent wall.">
+        <p style={styles.p}>
+          When someone outbids you, your ad is replaced on the main
+          billboard, but your logo moves permanently to the side wall next
+          to the billboard, linking to your site. It stays there for good —
+          it is never removed, regardless of how many times the spot
+          changes hands afterward.
+        </p>
       </Section>
 
       <Section title="What your campaign can include" lead="Everything needed to tell the story.">
@@ -807,9 +813,9 @@ export function PricingsPage({ onBack }) {
         <div className="legal-card" style={styles.callout}>
           <h3 style={styles.calloutTitle}>Pricing is shown before you pay.</h3>
           <p style={styles.calloutText}>
-            Select your campaign type and duration in the advertiser
-            form to see the flat campaign price before checkout. Prices may
-            change as the platform evolves.
+            The minimum bid required to take over the billboard is shown in
+            the advertiser form before checkout. This number changes in
+            real time as others bid.
           </p>
         </div>
       </Section>
@@ -904,21 +910,20 @@ export function RefundPage({ onBack }) {
     <PageShell onBack={onBack}>
       <Section title="Our refund policy">
         <p style={styles.p}>
-          Campaign payments are final once a campaign goes live and begins
-          showing on the billboard. Campaigns run for the fixed duration you
-          purchased (24 hours, 3 days, or 7 days) regardless of traffic or
-          the number of interactions received — we do not offer refunds or
-          extensions based on how much traffic a campaign gets, since no
-          traffic level is promised or guaranteed.
+          Payment is final once your campaign goes live on the billboard.
+          There is no fixed campaign duration — you hold the spot for as
+          long as no one outbids you. If you are later outbid, your ad
+          comes down and your logo moves permanently to the side wall; this
+          is not a service failure and does not entitle you to a refund,
+          credit, or any guaranteed length of time on the billboard.
         </p>
       </Section>
 
       <Section title="Before your campaign goes live">
         <p style={styles.p}>
-          If you paid for a campaign but it has not yet gone live — for
-          example if you haven't completed the campaign setup step, or your
-          campaign is still waiting for a slot to become available — contact
-          us and we'll review your request.
+          If you paid but have not yet completed the campaign setup step
+          (brand, logo, video, and destination link), contact us and we'll
+          review your request.
         </p>
       </Section>
 

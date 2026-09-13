@@ -1,23 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "./supabaseClient";
-import { DURATION_TIERS, priceForDuration, formatCents } from "./pricing";
+import { formatCents, MIN_BID_INCREMENT_CENTS } from "./pricing";
 
-// Pay-first flow:
-// 1. Pick a fixed duration (24h / 3 days / 7 days) — that's all that's
-//    needed up front. Price is flat and re-verified server-side.
-// 2. We create a lightweight "skeleton" campaign row (create_checkout_campaign)
-//    and redirect the browser to Dodo Payments' hosted checkout page for it
-//    (create-checkout returns checkout_url).
+// Auction flow — one spot, always for sale to the highest bidder:
+// 1. On mount, fetch the live minimum bid (get_current_bid_status) so the
+//    advertiser always sees a real, current number, never a stale one.
+// 2. They enter a bid at or above that minimum. We create a lightweight
+//    "skeleton" campaign row (create_checkout_campaign, re-validated
+//    server-side against the live minimum) and redirect to Dodo's hosted
+//    checkout for that amount.
 // 3. Dodo's return_url points back at our own homepage as
 //    "/?checkout=complete&payment_id=...". On mount we check for that query
-//    string, then call get-setup-link with payment_id (the id Dodo appends,
-//    matched against the dodo_payment_id column dodo-webhook writes) to get
-//    the one-time setup token, then redirect straight to /setup?token=...
-//    No email, no login required. get-setup-link already retries internally
-//    for ~8s while it waits on dodo-webhook to land, so we only need one
-//    extra fallback retry here for slower cases.
+//    string, call get-setup-link with payment_id to get the one-time setup
+//    token, then redirect to /setup?token=... No email, no login required.
+// 4. Submitting the setup form (brand/logo/video) is the moment the bid
+//    actually takes over the big billboard — submit_campaign_setup demotes
+//    whoever's currently live to the permanent side-rail in the same
+//    transaction. There is no time limit: you hold the spot until someone
+//    outbids you by at least $5.
 export default function AdvertiserForm({ onDone }) {
-  const [durationHours, setDurationHours] = useState(72);
+  const [minBidCents, setMinBidCents] = useState(null);
+  const [currentPriceCents, setCurrentPriceCents] = useState(null);
+  const [championName, setChampionName] = useState(null);
+  const [loadingStatus, setLoadingStatus] = useState(true);
+  const [bidInput, setBidInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [checkingOut, setCheckingOut] = useState(false);
@@ -26,7 +32,25 @@ export default function AdvertiserForm({ onDone }) {
   const [finalizeError, setFinalizeError] = useState(null);
   const [pendingCampaignId, setPendingCampaignId] = useState(null);
 
-  const priceCents = priceForDuration(durationHours) ?? 0;
+  useEffect(() => {
+    let cancelled = false;
+    async function loadBidStatus() {
+      setLoadingStatus(true);
+      const { data, error } = await supabase.rpc("get_current_bid_status").single();
+      if (cancelled) return;
+      if (!error && data) {
+        setCurrentPriceCents(data.current_price_cents);
+        setMinBidCents(data.min_next_bid_cents);
+        setChampionName(data.champion_brand_name);
+        setBidInput((data.min_next_bid_cents / 100).toString());
+      }
+      setLoadingStatus(false);
+    }
+    loadBidStatus();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // On mount, check whether we've just been sent back here by Dodo
   // (return_url = "/?checkout=complete&payment_id=..."). If so, skip the
@@ -89,7 +113,11 @@ export default function AdvertiserForm({ onDone }) {
   }
 
   function validate() {
-    if (!priceForDuration(durationHours)) return "Choose a valid duration.";
+    const bidCents = Math.round(parseFloat(bidInput) * 100);
+    if (!Number.isFinite(bidCents) || bidCents <= 0) return "Enter a valid bid amount.";
+    if (minBidCents != null && bidCents < minBidCents) {
+      return `Minimum bid is ${formatCents(minBidCents)}.`;
+    }
     return null;
   }
 
@@ -106,21 +134,21 @@ export default function AdvertiserForm({ onDone }) {
     setCheckoutError(null);
 
     try {
-      // Server computes and stores the real price — the client value is
-      // only used for the "Continue to payment" button copy.
+      const bidCents = Math.round(parseFloat(bidInput) * 100);
+      // Server re-validates against the live minimum and stores the real
+      // amount — the client value is only used for the button copy.
       const { data, error } = await supabase.rpc("create_checkout_campaign", {
-        p_slot: "left",
-        p_duration_hours: durationHours,
-      });
+        p_amount_cents: bidCents,
+      }).single();
 
-      if (error || !data?.campaign_id) {
-        throw new Error(error?.message || "Could not start your campaign.");
+      if (error || !data?.id) {
+        throw new Error(error?.message || "Could not start your bid.");
       }
 
-      setPendingCampaignId(data.campaign_id);
-      await startCheckout(data.campaign_id);
+      setPendingCampaignId(data.id);
+      await startCheckout(data.id);
     } catch (err) {
-      setSubmitError(err.message || "Could not start your campaign. Please try again.");
+      setSubmitError(err.message || "Could not start your bid. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -193,11 +221,12 @@ export default function AdvertiserForm({ onDone }) {
     <form style={styles.shell} onSubmit={handleSubmit}>
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>Put your launch on the billboard.</h1>
+          <h1 style={styles.title}>Own the billboard.</h1>
           <p style={styles.subtitle}>
-            Choose how long you want to run. The moment payment is
-            confirmed, you'll be taken straight to add your brand, logo,
-            video and destination — no need to have any of that ready yet.
+            There's only one spot. Outbid the current price by at least{" "}
+            {formatCents(MIN_BID_INCREMENT_CENTS)} and it's yours — no time
+            limit, you hold it until someone outbids you. The moment payment
+            is confirmed, you'll add your brand, logo, and video.
           </p>
         </div>
       </div>
@@ -205,39 +234,42 @@ export default function AdvertiserForm({ onDone }) {
       <div style={styles.section}>
         <div style={styles.sectionHeading}>
           <div>
-            <h2 style={styles.sectionTitle}>How long?</h2>
-            <p style={styles.sectionHint}>Pick a fixed duration for your billboard placement — a flat price, no click-counting.</p>
+            <h2 style={styles.sectionTitle}>Current price to beat</h2>
+            <p style={styles.sectionHint}>
+              {loadingStatus
+                ? "Loading current price…"
+                : championName
+                ? `${championName} is currently live at ${formatCents(currentPriceCents)}.`
+                : "No one has claimed the spot yet."}
+            </p>
           </div>
-        </div>
-
-        <div style={styles.presetGrid}>
-          {DURATION_TIERS.map((tier) => (
-            <button
-              key={tier.hours}
-              type="button"
-              onClick={() => setDurationHours(tier.hours)}
-              style={{
-                ...styles.preset,
-                ...(durationHours === tier.hours ? styles.presetActive : {}),
-              }}
-            >
-              <strong>{tier.label}</strong>
-              <span>{formatCents(tier.priceCents)}</span>
-            </button>
-          ))}
         </div>
 
         <div style={styles.totalBox}>
           <div>
-            <span style={styles.totalLabel}>Campaign price</span>
-            <strong style={styles.totalPrice}>{formatCents(priceCents)}</strong>
+            <span style={styles.totalLabel}>Minimum bid</span>
+            <strong style={styles.totalPrice}>
+              {loadingStatus ? "…" : formatCents(minBidCents)}
+            </strong>
             <span style={styles.totalSub}>
-              {DURATION_TIERS.find((t) => t.hours === durationHours)?.label} on the billboard
+              {formatCents(MIN_BID_INCREMENT_CENTS)} more than the current price
             </span>
           </div>
           <div style={styles.totalRight}>
-            <span>Flat rate — live for the full duration regardless of traffic</span>
-            <small>Final price is confirmed securely at checkout.</small>
+            <label style={styles.bidLabel} htmlFor="bid-amount">
+              Your bid (USD)
+            </label>
+            <input
+              id="bid-amount"
+              type="number"
+              step="0.01"
+              min={minBidCents != null ? minBidCents / 100 : undefined}
+              value={bidInput}
+              onChange={(e) => setBidInput(e.target.value)}
+              style={styles.bidInput}
+              disabled={loadingStatus}
+            />
+            <small>Final amount is confirmed securely at checkout.</small>
           </div>
         </div>
       </div>
@@ -246,10 +278,10 @@ export default function AdvertiserForm({ onDone }) {
 
       <div style={styles.footer}>
         <div>
-          <strong>Ready to launch?  </strong>
+          <strong>Ready to take over?  </strong>
           <span>You'll add your brand details right after payment.</span>
         </div>
-        <button type="submit" style={styles.primaryButton} disabled={submitting}>
+        <button type="submit" style={styles.primaryButton} disabled={submitting || loadingStatus}>
           {submitting ? "Preparing checkout…" : "Continue to payment →"}
         </button>
       </div>
@@ -293,8 +325,8 @@ const styles = {
     boxShadow: "inset 0 1px 0 rgba(255,255,255,.025), 0 1px 2px rgba(0,0,0,.2)",
   },
   presetGrid: { display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12, marginBottom: 20 },
-  preset: { border: "1px solid rgba(255,255,255,.12)", background: "linear-gradient(180deg,#151515,#111)", color: "#fff", borderRadius: 13, padding: "17px 14px", cursor: "pointer", textAlign: "left", fontFamily: "inherit" },
-  presetActive: { borderColor: "#ffd400", background: "rgba(255,212,0,.09)" },
+  bidLabel: { display: "block", fontSize: 11, opacity: .7, marginBottom: 6, textTransform: "uppercase", letterSpacing: .5 },
+  bidInput: { width: 140, background: "#0c0c0c", border: "1px solid rgba(255,255,255,.18)", borderRadius: 10, color: "#fff", fontSize: 18, fontWeight: 700, padding: "8px 12px", marginBottom: 6, fontFamily: "inherit" },
   totalBox: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, padding: "20px 21px", borderRadius: 16, background: "#f5f5f2", color: "#000" },
   totalLabel: { display: "block", fontSize: 10, fontWeight: 700, letterSpacing: ".02em", opacity: .52, marginBottom: 4 },
   totalPrice: { display: "block", fontSize: 31, lineHeight: 1, letterSpacing: "-.045em" },

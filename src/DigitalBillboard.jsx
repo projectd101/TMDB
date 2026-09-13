@@ -1694,19 +1694,18 @@ export default function DigitalBillboard({ onCampaignChange }) {
     }, [campaign]);
 
   /*
-   * Replay the takeover ad whenever the billboard becomes active again
-   * after the visitor has left this page (for example Legal, Pricing,
-   * Discover, or Advertise) and then navigates back to the billboard.
-   *
-   * The session flag is also used when an advertiser link opens in a new
-   * tab, so returning to the billboard tab still replays the ad.
+   * Autoplay the takeover ad as soon as the current campaign is known —
+   * both on a visitor's very first load of the billboard, and again
+   * whenever they return to it after leaving (Legal, Pricing, Discover,
+   * Advertise) and coming back. Previously this only fired on the
+   * "returning" path, so a first-time visitor never saw the ad play until
+   * they navigated away and back once — this treats first mount the same
+   * as a return.
    */
   useEffect(() => {
     if (loading) return;
 
     let timer = null;
-    const isReturningToBillboard =
-      sessionStorage.getItem(RETURN_FLAG) === "1";
 
     const replay = () => {
       if (document.visibilityState === "hidden") return;
@@ -1729,11 +1728,9 @@ export default function DigitalBillboard({ onCampaignChange }) {
       }, 150);
     };
 
-    // Route navigation/remount: App unmounts the billboard when another
-    // page is selected, then this effect runs again when Billboard returns.
-    if (isReturningToBillboard) {
-      replay();
-    }
+    // Route navigation/remount (isReturningToBillboard), or a plain first
+    // mount of the billboard — both should autoplay immediately.
+    replay();
 
     const handlePageShow = () => {
       if (sessionStorage.getItem(RETURN_FLAG) === "1") {
