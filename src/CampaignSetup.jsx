@@ -155,10 +155,10 @@ export default function CampaignSetup({ token }) {
         <div style={styles.successCard}>
           <div style={styles.successMark}>✓</div>
           <div style={styles.eyebrow}>All set</div>
-          <h2 style={styles.successTitle}>You're queued for the billboard.</h2>
+          <h2 style={styles.successTitle}>You've successfully set up your campaign.</h2>
           <p style={styles.successText}>
-            Your campaign is saved and will enter the rotation automatically —
-            live as soon as its slot is free.
+            Your campaign is saved. —
+            You can see it live on the billboard.
           </p>
           <a href="/" style={styles.primaryLinkButton}>
             Back to billboard →
@@ -316,7 +316,7 @@ export default function CampaignSetup({ token }) {
             </span>
             <span>
               <strong>{form.offerEnabled ? "Exclusive offer enabled" : "No offer?  "}</strong>
-              <small>{form.offerEnabled ? "Show a discount or launch offer on the billboard." : "Run this as discovery / awareness only."}</small>
+              <small>{form.offerEnabled ? "Show a discount or launch offer on the billboard." : " "}</small>
             </span>
           </button>
 
@@ -381,7 +381,7 @@ export default function CampaignSetup({ token }) {
         <div style={styles.footer}>
           <div>
             <strong>Last step.  </strong>
-            <span>Your campaign goes into rotation right after this.</span>
+            <span>Your campaign goes live right after this.</span>
           </div>
           <button type="submit" style={styles.primaryButton} disabled={submitting}>
             {submitting ? "Saving campaign…" : "Publish campaign →"}
