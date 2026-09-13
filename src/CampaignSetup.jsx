@@ -77,19 +77,20 @@ export default function CampaignSetup({ token }) {
     return null;
   }
 
-  async function uploadFile(bucket, file, prefix) {
-    const ext = file.name.includes(".") ? file.name.split(".").pop().toLowerCase() : "bin";
-    const path = `${prefix}/${crypto.randomUUID()}.${ext}`;
+  async function uploadFile(kind, file, token) {
+    const body = new FormData();
+    body.append("token", token);
+    body.append("kind", kind);
+    body.append("file", file);
 
-    const { error } = await supabase.storage.from(bucket).upload(path, file, {
-      cacheControl: "31536000",
-      upsert: false,
-      contentType: file.type,
+    const { data, error } = await supabase.functions.invoke("upload-campaign-asset", {
+      body,
     });
 
-    if (error) throw new Error(`Could not upload ${prefix === "logos" ? "logo" : "video"}. Please try again.`);
-    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-    return data.publicUrl;
+    if (error || !data?.url) {
+      throw new Error(`Could not upload ${kind === "logo" ? "logo" : "video"}. Please try again.`);
+    }
+    return data.url;
   }
 
   async function handleSubmit(e) {
@@ -105,8 +106,8 @@ export default function CampaignSetup({ token }) {
 
     try {
       const [logoUrl, videoUrl] = await Promise.all([
-        uploadFile("campaign-logos", form.logoFile, "logos"),
-        uploadFile("campaign-videos", form.videoFile, "videos"),
+        uploadFile("logo", form.logoFile, token),
+        uploadFile("video", form.videoFile, token),
       ]);
 
       const discountPercent = form.offerEnabled ? Number(form.discountPercent) : null;
