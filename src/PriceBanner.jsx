@@ -31,44 +31,82 @@ export default function PriceBanner({ onAdvertiseClick }) {
   if (!status) return null;
 
   return (
-    <button type="button" onClick={onAdvertiseClick} style={styles.banner}>
-      <span style={styles.group}>
-        <span style={styles.label}>Current price</span>
-        <span style={styles.price}>{formatCents(status.current_price_cents)}</span>
-      </span>
-      <span style={styles.divider} />
-      <span style={styles.group}>
-        <span style={styles.label}>Min. bid to outbid</span>
-        <span style={styles.price}>{formatCents(status.min_next_bid_cents)}</span>
-      </span>
-      {status.champion_brand_name && (
-        <span style={styles.champion}>held by {status.champion_brand_name}</span>
-      )}
-    </button>
+    <>
+      <style>{`
+        @keyframes stickyShimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
+      <button type="button" onClick={onAdvertiseClick} style={styles.wrap}>
+        <span style={{ ...styles.sticky, ...styles.stickyOne }}>
+          <span style={styles.pin} />
+          <span style={styles.label}>Current price</span>
+          <span style={styles.price}>{formatCents(status.current_price_cents)}</span>
+        </span>
+        <span style={{ ...styles.sticky, ...styles.stickyTwo }}>
+          <span style={styles.pin} />
+          <span style={styles.label}>Min. bid to outbid</span>
+          <span style={styles.price}>{formatCents(status.min_next_bid_cents)}</span>
+        </span>
+        {status.champion_brand_name && (
+          <span style={styles.champion}>held by {status.champion_brand_name}</span>
+        )}
+      </button>
+    </>
   );
 }
 
 const styles = {
-  banner: {
+  wrap: {
     position: "fixed",
-    left: "50%",
-    top: 230,
-    transform: "translateX(-50%)",
+    left: 40,
+    top: 90,
     zIndex: 6,
     display: "flex",
-    alignItems: "center",
-    gap: 12,
-    background: "rgba(0,0,0,.55)",
-    border: "1px solid rgba(255,255,255,.14)",
-    borderRadius: 999,
-    padding: "8px 18px",
-    color: "#fff",
-    fontFamily: "Arial,sans-serif",
+    alignItems: "flex-start",
+    gap: 14,
+    background: "transparent",
+    border: "none",
+    padding: 0,
     cursor: "pointer",
   },
-  group: { display: "flex", flexDirection: "column", alignItems: "flex-start", lineHeight: 1.2 },
-  divider: { width: 1, height: 22, background: "rgba(255,255,255,.18)" },
-  label: { fontSize: 9, opacity: .6, textTransform: "uppercase", letterSpacing: ".04em" },
-  price: { fontSize: 13, fontWeight: 800 },
-  champion: { fontSize: 9, opacity: .55 },
+  sticky: {
+    position: "relative",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: 4,
+    minWidth: 118,
+    padding: "14px 16px 16px",
+    borderRadius: 3,
+    fontFamily: "Arial,sans-serif",
+    color: "#3a2c00",
+    backgroundImage:
+      "linear-gradient(120deg, #ffe98a 0%, #ffd94a 30%, #f7c948 45%, #ffe98a 60%, #ffd94a 100%)",
+    backgroundSize: "260% 100%",
+    animation: "stickyShimmer 5s linear infinite",
+    boxShadow: "0 10px 22px rgba(0,0,0,.45), 0 2px 0 rgba(255,255,255,.25) inset",
+  },
+  stickyOne: { transform: "rotate(-4deg)" },
+  stickyTwo: { transform: "rotate(3deg)", marginTop: 10 },
+  pin: {
+    position: "absolute",
+    top: -6,
+    left: "50%",
+    transform: "translateX(-50%)",
+    width: 10,
+    height: 10,
+    borderRadius: "50%",
+    background: "radial-gradient(circle at 35% 30%, #ff8a8a, #c62828)",
+    boxShadow: "0 2px 3px rgba(0,0,0,.4)",
+  },
+  label: { fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".03em", opacity: .72 },
+  price: { fontSize: 17, fontWeight: 800 },
+  champion: {
+    alignSelf: "center",
+    fontSize: 10,
+    color: "rgba(255,255,255,.6)",
+    marginLeft: 4,
+  },
 };
