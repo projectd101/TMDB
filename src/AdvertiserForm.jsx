@@ -242,7 +242,7 @@ export default function AdvertiserForm({ onDone }) {
       <div style={styles.section}>
         <div style={styles.sectionHeading}>
           <div>
-            <h2 style={styles.sectionTitle}>Current price to beat</h2>
+            <h2 style={styles.sectionTitle}>Current price to outbid</h2>
             <p style={styles.sectionHint}>
               {loadingStatus
                 ? "Loading current price…"
