@@ -39,15 +39,17 @@ export default function PriceBanner({ onAdvertiseClick }) {
         }
       `}</style>
       <button type="button" onClick={onAdvertiseClick} style={styles.wrap}>
-        <span style={{ ...styles.sticky, ...styles.stickyOne }}>
-          <span style={styles.pin} />
-          <span style={styles.label}>Current price</span>
-          <span style={styles.price}>{formatCents(status.current_price_cents)}</span>
-        </span>
-        <span style={{ ...styles.sticky, ...styles.stickyTwo }}>
-          <span style={styles.pin} />
-          <span style={styles.label}>Min. bid to outbid</span>
-          <span style={styles.price}>{formatCents(status.min_next_bid_cents)}</span>
+        <span style={styles.row}>
+          <span style={{ ...styles.sticky, ...styles.stickyOne }}>
+            <span style={styles.pin} />
+            <span style={styles.label}>Current price</span>
+            <span style={styles.price}>{formatCents(status.current_price_cents)}</span>
+          </span>
+          <span style={{ ...styles.sticky, ...styles.stickyTwo }}>
+            <span style={styles.pin} />
+            <span style={styles.label}>Min. bid to outbid</span>
+            <span style={styles.price}>{formatCents(status.min_next_bid_cents)}</span>
+          </span>
         </span>
         {status.champion_brand_name && (
           <span style={styles.champion}>held by {status.champion_brand_name}</span>
@@ -64,12 +66,18 @@ const styles = {
     top: 90,
     zIndex: 6,
     display: "flex",
+    flexDirection: "column",
     alignItems: "flex-start",
-    gap: 14,
+    gap: 8,
     background: "transparent",
     border: "none",
     padding: 0,
     cursor: "pointer",
+  },
+  row: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 14,
   },
   sticky: {
     position: "relative",
@@ -104,9 +112,8 @@ const styles = {
   label: { fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".03em", opacity: .72 },
   price: { fontSize: 17, fontWeight: 800 },
   champion: {
-    alignSelf: "center",
+    marginTop: 6,
     fontSize: 10,
     color: "rgba(255,255,255,.6)",
-    marginLeft: 4,
   },
 };
