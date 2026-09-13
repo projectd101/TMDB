@@ -267,7 +267,11 @@ export default function AdvertiserForm({ onDone }) {
           <div style={styles.totalBoxSheen} />
           <div style={styles.totalBoxInner}>
             <div>
-              <span style={styles.totalLabel}>Minimum bid</span>
+              <span style={styles.totalLabel}>Current price</span>
+              <strong style={styles.currentPrice}>
+                {loadingStatus ? "…" : formatCents(currentPriceCents)}
+              </strong>
+              <span style={styles.totalLabel2}>Minimum bid</span>
               <strong style={styles.totalPrice}>
                 {loadingStatus ? "…" : formatCents(minBidCents)}
               </strong>
@@ -409,6 +413,8 @@ const styles = {
     color: "#fff",
   },
   totalLabel: { display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", backgroundImage: "linear-gradient(90deg, #5b8dff, #e93cff)", backgroundClip: "text", WebkitBackgroundClip: "text", color: "transparent", WebkitTextFillColor: "transparent", marginBottom: 6 },
+  currentPrice: { display: "block", fontSize: 20, lineHeight: 1, letterSpacing: "-.03em", fontWeight: 700, color: "rgba(255,255,255,.75)", marginBottom: 14 },
+  totalLabel2: { display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", color: "rgba(255,255,255,.45)", marginBottom: 6 },
   totalPrice: {
     display: "block", fontSize: 38, lineHeight: 1, letterSpacing: "-.045em",
     fontWeight: 800, color: "#fff",
