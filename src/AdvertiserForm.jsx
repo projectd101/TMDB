@@ -193,13 +193,11 @@ export default function AdvertiserForm({ onDone }) {
   if (finalizing || finalizeError) {
     return (
       <div style={styles.successCard}>
-        <div style={styles.successMark}>✓</div>
-        <div style={styles.eyebrow}>{finalizeError ? "Confirming payment" : "Payment received"}</div>
-        <h2 style={styles.successTitle}>
-          {finalizeError ? "One more moment." : "Taking you to setup…"}
-        </h2>
+        <div style={styles.successMark}>…</div>
+        <div style={styles.eyebrow}>Confirming payment</div>
+        <h2 style={styles.successTitle}>One more moment.</h2>
         <p style={styles.successText}>
-          {finalizeError || "Redirecting you to finish your campaign — just a second."}
+          {finalizeError || "Confirming your payment — this will just take a second."}
         </p>
       </div>
     );
