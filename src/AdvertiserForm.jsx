@@ -90,22 +90,31 @@ export default function AdvertiserForm({ onDone }) {
         return;
       }
 
+      // Dodo redirects back to return_url on decline/cancel too, not just
+      // success. get-setup-link only returns reason: "failed" once it's
+      // certain no payment.succeeded webhook is coming — never show
+      // "payment received" for that case, just send them home.
+      if (data.reason === "failed") {
+        window.location.href = `${window.location.origin}/?payment=failed`;
+        return;
+      }
+
       // get-setup-link already polls for ~8s server-side. This is a slower
       // fallback on top of that, for rare cases where the webhook lags
       // even further.
       if (attempt < 3) {
         setFinalizeError(
-          "Payment received — finishing setup, this can take a few seconds. Please wait…"
+          "Confirming your payment — this can take a few seconds. Please wait…"
         );
         setTimeout(() => redirectToSetup(paymentId, attempt + 1), 4000);
       } else {
         setFinalizeError(
-          "Payment received, but setup is taking longer than expected. Please refresh in a moment — your campaign is safe."
+          "We couldn't confirm your payment. If you were charged, refresh in a moment — otherwise please try again."
         );
       }
     } catch (err) {
       setFinalizeError(
-        err.message || "Payment received, but we couldn't open your setup page automatically. Please refresh — your campaign is safe."
+        err.message || "We couldn't confirm your payment automatically. Please refresh in a moment."
       );
     } finally {
       setFinalizing(false);
@@ -185,7 +194,7 @@ export default function AdvertiserForm({ onDone }) {
     return (
       <div style={styles.successCard}>
         <div style={styles.successMark}>✓</div>
-        <div style={styles.eyebrow}>Payment received</div>
+        <div style={styles.eyebrow}>{finalizeError ? "Confirming payment" : "Payment received"}</div>
         <h2 style={styles.successTitle}>
           {finalizeError ? "One more moment." : "Taking you to setup…"}
         </h2>
