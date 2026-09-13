@@ -254,30 +254,46 @@ export default function AdvertiserForm({ onDone }) {
         </div>
 
         <div style={styles.totalBox}>
-          <div>
-            <span style={styles.totalLabel}>Minimum bid</span>
-            <strong style={styles.totalPrice}>
-              {loadingStatus ? "…" : formatCents(minBidCents)}
-            </strong>
-            <span style={styles.totalSub}>
-              {formatCents(MIN_BID_INCREMENT_CENTS)} more than the current price
-            </span>
-          </div>
-          <div style={styles.totalRight}>
-            <label style={styles.bidLabel} htmlFor="bid-amount">
-              Your bid (USD)
-            </label>
-            <input
-              id="bid-amount"
-              type="number"
-              step="0.01"
-              min={minBidCents != null ? minBidCents / 100 : undefined}
-              value={bidInput}
-              onChange={(e) => setBidInput(e.target.value)}
-              style={styles.bidInput}
-              disabled={loadingStatus}
-            />
-            <small>Final amount is confirmed securely at checkout.</small>
+          <style>{`
+            @keyframes cardSheen {
+              0% { transform: translateX(-120%) rotate(8deg); }
+              100% { transform: translateX(220%) rotate(8deg); }
+            }
+            @keyframes priceGlow {
+              0%, 100% { text-shadow: 0 0 22px rgba(91,141,255,.4), 0 0 2px rgba(233,60,255,.4); }
+              50% { text-shadow: 0 0 38px rgba(233,60,255,.5), 0 0 4px rgba(91,141,255,.6); }
+            }
+          `}</style>
+          <div style={styles.totalBoxSheen} />
+          <div style={styles.totalBoxInner}>
+            <div>
+              <span style={styles.totalLabel}>Minimum bid</span>
+              <strong style={styles.totalPrice}>
+                {loadingStatus ? "…" : formatCents(minBidCents)}
+              </strong>
+              <span style={styles.totalSub}>
+                +{formatCents(MIN_BID_INCREMENT_CENTS)} over the current price
+              </span>
+            </div>
+            <div style={styles.totalRight}>
+              <label style={styles.bidLabel} htmlFor="bid-amount">
+                Your bid (USD)
+              </label>
+              <div style={styles.bidInputWrap}>
+                <span style={styles.bidInputPrefix}>$</span>
+                <input
+                  id="bid-amount"
+                  type="number"
+                  step="0.01"
+                  min={minBidCents != null ? minBidCents / 100 : undefined}
+                  value={bidInput}
+                  onChange={(e) => setBidInput(e.target.value)}
+                  style={styles.bidInput}
+                  disabled={loadingStatus}
+                />
+              </div>
+              <small style={styles.bidFinePrint}>Final amount is confirmed securely at checkout.</small>
+            </div>
           </div>
         </div>
       </div>
@@ -320,7 +336,7 @@ const styles = {
   eyebrow: { fontSize: 10, fontWeight: 700, letterSpacing: ".08em", color: "#ffd400", marginBottom: 10 },
   title: { margin: 0, maxWidth: 760, fontSize: "clamp(34px, 5vw, 54px)", lineHeight: 1.02, letterSpacing: "-.055em", fontWeight: 750, fontFamily: '"Avenir Next", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' },
   titleRipple: {
-    backgroundImage: "linear-gradient(90deg, #fff 0%, #fff 40%, #ffd400 50%, #fff 60%, #fff 100%)",
+    backgroundImage: "linear-gradient(90deg, #fff 0%, #fff 38%, #5b8dff 48%, #e93cff 54%, #fff 64%, #fff 100%)",
     backgroundSize: "300% 100%",
     backgroundClip: "text",
     WebkitBackgroundClip: "text",
@@ -343,12 +359,62 @@ const styles = {
     boxShadow: "inset 0 1px 0 rgba(255,255,255,.025), 0 1px 2px rgba(0,0,0,.2)",
   },
   presetGrid: { display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12, marginBottom: 20 },
-  bidLabel: { display: "block", fontSize: 11, opacity: .7, marginBottom: 6, textTransform: "uppercase", letterSpacing: .5 },
-  bidInput: { width: 140, background: "#0c0c0c", border: "1px solid rgba(255,255,255,.18)", borderRadius: 10, color: "#fff", fontSize: 18, fontWeight: 700, padding: "8px 12px", marginBottom: 6, fontFamily: "inherit" },
-  totalBox: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, padding: "20px 21px", borderRadius: 16, background: "#f5f5f2", color: "#000" },
-  totalLabel: { display: "block", fontSize: 10, fontWeight: 700, letterSpacing: ".02em", opacity: .52, marginBottom: 4 },
-  totalPrice: { display: "block", fontSize: 31, lineHeight: 1, letterSpacing: "-.045em" },
-  totalSub: { display: "block", fontSize: 11, opacity: .50, marginTop: 4 },
+  bidLabel: { display: "block", fontSize: 10, opacity: .5, marginBottom: 8, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700 },
+  bidInputWrap: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 2,
+    background: "rgba(0,0,0,.35)",
+    border: "1px solid rgba(233,60,255,.35)",
+    borderRadius: 12,
+    padding: "6px 14px",
+    boxShadow: "inset 0 1px 3px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.02)",
+  },
+  bidInputPrefix: { color: "#5b8dff", fontSize: 18, fontWeight: 800 },
+  bidInput: {
+    width: 130, background: "transparent", border: "none", outline: "none",
+    color: "#fff", fontSize: 20, fontWeight: 800, padding: "4px 4px",
+    fontFamily: "inherit", letterSpacing: "-.02em",
+  },
+  bidFinePrint: { display: "block", marginTop: 8, opacity: .4 },
+  totalBox: {
+    position: "relative",
+    overflow: "hidden",
+    borderRadius: 20,
+    padding: "1px",
+    background: "linear-gradient(135deg, #5b8dff 0%, rgba(255,255,255,.08) 30%, #e93cff 70%, rgba(255,255,255,.05) 100%)",
+    boxShadow: "0 20px 60px -20px rgba(0,0,0,.7), 0 0 50px -12px rgba(91,141,255,.35), 0 0 50px -12px rgba(233,60,255,.25)",
+  },
+  totalBoxSheen: {
+    position: "absolute",
+    top: "-50%",
+    left: 0,
+    width: "35%",
+    height: "200%",
+    background: "linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.12), rgba(255,255,255,0))",
+    animation: "cardSheen 5s ease-in-out infinite",
+    pointerEvents: "none",
+    zIndex: 2,
+  },
+  totalBoxInner: {
+    position: "relative",
+    zIndex: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 24,
+    padding: "26px 28px",
+    borderRadius: 19,
+    background: "linear-gradient(160deg, #14101f 0%, #0a0a12 45%, #150c1a 100%)",
+    color: "#fff",
+  },
+  totalLabel: { display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", backgroundImage: "linear-gradient(90deg, #5b8dff, #e93cff)", backgroundClip: "text", WebkitBackgroundClip: "text", color: "transparent", WebkitTextFillColor: "transparent", marginBottom: 6 },
+  totalPrice: {
+    display: "block", fontSize: 38, lineHeight: 1, letterSpacing: "-.045em",
+    fontWeight: 800, color: "#fff",
+    animation: "priceGlow 3.2s ease-in-out infinite",
+  },
+  totalSub: { display: "block", fontSize: 11, opacity: .45, marginTop: 8 },
   totalRight: { maxWidth: 300, textAlign: "right", fontSize: 10.5, lineHeight: 1.55, opacity: .58 },
   footer: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, padding: "25px 46px", background: "#101010", borderTop: "1px solid rgba(255,255,255,.06)" },
   primaryButton: { border: 0, borderRadius: 999, background: "#f4f4f1", color: "#090909", padding: "14px 20px", fontFamily: "inherit", fontSize: 12, fontWeight: 750, cursor: "pointer", boxShadow: "0 10px 28px rgba(0,0,0,.24)" },
