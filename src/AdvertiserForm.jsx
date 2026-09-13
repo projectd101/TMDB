@@ -260,8 +260,8 @@ export default function AdvertiserForm({ onDone }) {
               100% { transform: translateX(220%) rotate(8deg); }
             }
             @keyframes priceGlow {
-              0%, 100% { text-shadow: 0 0 24px rgba(255,212,0,.35), 0 0 2px rgba(255,212,0,.5); }
-              50% { text-shadow: 0 0 40px rgba(255,212,0,.55), 0 0 4px rgba(255,212,0,.7); }
+              0%, 100% { text-shadow: 0 0 22px rgba(91,141,255,.4), 0 0 2px rgba(233,60,255,.4); }
+              50% { text-shadow: 0 0 38px rgba(233,60,255,.5), 0 0 4px rgba(91,141,255,.6); }
             }
           `}</style>
           <div style={styles.totalBoxSheen} />
@@ -336,7 +336,7 @@ const styles = {
   eyebrow: { fontSize: 10, fontWeight: 700, letterSpacing: ".08em", color: "#ffd400", marginBottom: 10 },
   title: { margin: 0, maxWidth: 760, fontSize: "clamp(34px, 5vw, 54px)", lineHeight: 1.02, letterSpacing: "-.055em", fontWeight: 750, fontFamily: '"Avenir Next", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' },
   titleRipple: {
-    backgroundImage: "linear-gradient(90deg, #fff 0%, #fff 40%, #ffd400 50%, #fff 60%, #fff 100%)",
+    backgroundImage: "linear-gradient(90deg, #fff 0%, #fff 38%, #5b8dff 48%, #e93cff 54%, #fff 64%, #fff 100%)",
     backgroundSize: "300% 100%",
     backgroundClip: "text",
     WebkitBackgroundClip: "text",
@@ -365,12 +365,12 @@ const styles = {
     alignItems: "center",
     gap: 2,
     background: "rgba(0,0,0,.35)",
-    border: "1px solid rgba(255,212,0,.3)",
+    border: "1px solid rgba(233,60,255,.35)",
     borderRadius: 12,
     padding: "6px 14px",
     boxShadow: "inset 0 1px 3px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.02)",
   },
-  bidInputPrefix: { color: "rgba(255,212,0,.85)", fontSize: 18, fontWeight: 800 },
+  bidInputPrefix: { color: "#5b8dff", fontSize: 18, fontWeight: 800 },
   bidInput: {
     width: 130, background: "transparent", border: "none", outline: "none",
     color: "#fff", fontSize: 20, fontWeight: 800, padding: "4px 4px",
@@ -382,8 +382,8 @@ const styles = {
     overflow: "hidden",
     borderRadius: 20,
     padding: "1px",
-    background: "linear-gradient(135deg, rgba(255,212,0,.5), rgba(255,255,255,.08) 30%, rgba(255,212,0,.15) 70%, rgba(255,255,255,.05))",
-    boxShadow: "0 20px 60px -20px rgba(0,0,0,.7), 0 0 40px -10px rgba(255,212,0,.15)",
+    background: "linear-gradient(135deg, #5b8dff 0%, rgba(255,255,255,.08) 30%, #e93cff 70%, rgba(255,255,255,.05) 100%)",
+    boxShadow: "0 20px 60px -20px rgba(0,0,0,.7), 0 0 50px -12px rgba(91,141,255,.35), 0 0 50px -12px rgba(233,60,255,.25)",
   },
   totalBoxSheen: {
     position: "absolute",
@@ -391,7 +391,7 @@ const styles = {
     left: 0,
     width: "35%",
     height: "200%",
-    background: "linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.09), rgba(255,255,255,0))",
+    background: "linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.12), rgba(255,255,255,0))",
     animation: "cardSheen 5s ease-in-out infinite",
     pointerEvents: "none",
     zIndex: 2,
@@ -405,10 +405,10 @@ const styles = {
     gap: 24,
     padding: "26px 28px",
     borderRadius: 19,
-    background: "linear-gradient(160deg, #171410 0%, #0d0c0a 55%, #141210 100%)",
+    background: "linear-gradient(160deg, #14101f 0%, #0a0a12 45%, #150c1a 100%)",
     color: "#fff",
   },
-  totalLabel: { display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", color: "rgba(255,212,0,.75)", marginBottom: 6 },
+  totalLabel: { display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", backgroundImage: "linear-gradient(90deg, #5b8dff, #e93cff)", backgroundClip: "text", WebkitBackgroundClip: "text", color: "transparent", WebkitTextFillColor: "transparent", marginBottom: 6 },
   totalPrice: {
     display: "block", fontSize: 38, lineHeight: 1, letterSpacing: "-.045em",
     fontWeight: 800, color: "#fff",
