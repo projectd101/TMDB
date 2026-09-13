@@ -840,33 +840,6 @@ export default function DigitalBillboard({ onCampaignChange }) {
     };
   }, [loadCampaign]);
 
-  /*
-   * Per-visitor auto-rotation: every live campaign in this slot gets shown
-   * in turn (campaign 1 -> 2 -> ... -> N -> 1...), independent of anyone
-   * else's browser. Nobody waits for another advertiser's campaign to
-   * finish — get_next_campaign already only returns campaigns with status
-   * 'live', so a completed one simply stops being selected.
-   *
-   * Advances every 18s, but never while the ad-takeover video is actively
-   * playing (that has its own lifecycle) and never while the tab is hidden
-   * (no point burning through the rotation for a tab nobody's looking at).
-   */
-  useEffect(() => {
-    if (loading) return;
-    if (adPlaying) return;
-
-    const ROTATION_INTERVAL_MS = 18000;
-
-    const interval = setInterval(() => {
-      if (document.visibilityState === "hidden") return;
-      if (playingAdRef.current) return;
-
-      loadCampaign(true, true);
-    }, ROTATION_INTERVAL_MS);
-
-    return () => clearInterval(interval);
-  }, [loading, adPlaying, loadCampaign]);
-
   useEffect(() => {
     const mount = mountRef.current;
 
@@ -1692,6 +1665,29 @@ export default function DigitalBillboard({ onCampaignChange }) {
         restore();
       }
     }, [campaign]);
+
+  /*
+   * Single-champion model: there's only ever one live campaign, so there's
+   * nothing to "rotate" to. Instead, this replays the takeover ad on a
+   * fixed interval for anyone sitting on the page — never while the ad is
+   * already playing, and never while the tab is hidden (no point burning
+   * a replay on a tab nobody's looking at).
+   */
+  useEffect(() => {
+    if (loading) return;
+    if (adPlaying) return;
+
+    const REPLAY_INTERVAL_MS = 5000;
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === "hidden") return;
+      if (playingAdRef.current) return;
+
+      playAdVideo();
+    }, REPLAY_INTERVAL_MS);
+
+    return () => clearInterval(interval);
+  }, [loading, adPlaying, playAdVideo]);
 
   /*
    * Autoplay the takeover ad as soon as the current campaign is known —
