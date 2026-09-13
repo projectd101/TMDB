@@ -221,7 +221,15 @@ export default function AdvertiserForm({ onDone }) {
     <form style={styles.shell} onSubmit={handleSubmit}>
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>Own the billboard.</h1>
+          <h1 style={styles.title}>
+            <style>{`
+              @keyframes billboardRipple {
+                0% { background-position: 200% 0; }
+                100% { background-position: -200% 0; }
+              }
+            `}</style>
+            <span style={styles.titleRipple}>Own the billboard.</span>
+          </h1>
           <p style={styles.subtitle}>
             There's only one spot. Outbid the current price by at least{" "}
             {formatCents(MIN_BID_INCREMENT_CENTS)} and it's yours — no time
@@ -311,6 +319,16 @@ const styles = {
   },
   eyebrow: { fontSize: 10, fontWeight: 700, letterSpacing: ".08em", color: "#ffd400", marginBottom: 10 },
   title: { margin: 0, maxWidth: 760, fontSize: "clamp(34px, 5vw, 54px)", lineHeight: 1.02, letterSpacing: "-.055em", fontWeight: 750, fontFamily: '"Avenir Next", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' },
+  titleRipple: {
+    backgroundImage: "linear-gradient(90deg, #fff 0%, #fff 40%, #ffd400 50%, #fff 60%, #fff 100%)",
+    backgroundSize: "300% 100%",
+    backgroundClip: "text",
+    WebkitBackgroundClip: "text",
+    color: "transparent",
+    WebkitTextFillColor: "transparent",
+    animation: "billboardRipple 4s linear infinite",
+    display: "inline-block",
+  },
   subtitle: { margin: "15px 0 0", maxWidth: 690, color: "rgba(255,255,255,.57)", fontSize: 14, lineHeight: 1.65 },
   section: { padding: "38px 46px 42px", borderBottom: "1px solid rgba(255,255,255,.075)", background: "#0b0b0b" },
   sectionHeading: { marginBottom: 25 },
