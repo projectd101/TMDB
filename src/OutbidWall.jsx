@@ -32,7 +32,7 @@ export default function OutbidWall() {
 
   return (
     <div style={styles.wrap}>
-      <div style={styles.eyebrow}>Outbid, not out</div>
+      <div style={styles.eyebrow}>Hall</div>
       <div style={styles.grid}>
         {wall.map((entry) => (
           <a
