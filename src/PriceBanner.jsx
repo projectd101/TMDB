@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "./supabaseClient";
 import { formatCents } from "./pricing";
 
-// Publicly visible current price-to-beat, live-updating whenever the
+// Publicly visible current price-to-outbid, live-updating whenever the
 // champion changes (outbid or first claim).
 export default function PriceBanner({ onAdvertiseClick }) {
   const [status, setStatus] = useState(null);
@@ -32,7 +32,7 @@ export default function PriceBanner({ onAdvertiseClick }) {
 
   return (
     <button type="button" onClick={onAdvertiseClick} style={styles.banner}>
-      <span style={styles.label}>Current price to beat</span>
+      <span style={styles.label}>Current price to outbid</span>
       <span style={styles.price}>{formatCents(status.current_price_cents)}</span>
       {status.champion_brand_name && (
         <span style={styles.champion}>held by {status.champion_brand_name}</span>

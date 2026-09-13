@@ -766,7 +766,7 @@ export function PricingsPage({ onBack }) {
         lead="To take over the billboard, you must bid at least $5 more than the current price."
       >
         <div className="legal-card" style={styles.callout}>
-          <h3 style={styles.calloutTitle}>The current price to beat is shown live on the billboard page.</h3>
+          <h3 style={styles.calloutTitle}>The current price to outbid is shown live on the billboard page.</h3>
           <p style={styles.calloutText}>
             If no one currently holds the spot, the starting price is $5.
             Payment is final — if you are later outbid, your ad comes down
@@ -953,4 +953,3 @@ export function RefundPage({ onBack }) {
     </PageShell>
   );
 }
-
